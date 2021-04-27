@@ -12,11 +12,11 @@ class Vehicle:
 		self.finish = self.distance > distance_circle
 		return self.finish
 
-	def set_puncture(self, puncture):
+	def is_puncture(self, puncture):
 		return puncture > self.puncture
 
-	def set_finish(self, finish):
-		self.finish = finish
+	def reset_finish(self):
+		self.finish = True
 
 
 class Truck(Vehicle):
@@ -30,6 +30,6 @@ class Car(Vehicle):
 		self.people = people
 
 class Motorcycle(Vehicle):
-	def __init__(self, name, speed, puncture, elimination, stroller=1):
+	def __init__(self, name, speed, puncture, elimination, stroller=False):
 		Vehicle.__init__(self, name, speed, puncture, elimination)
 		self.stroller = stroller

@@ -39,23 +39,30 @@ for x in range(1, random.randint(1, 6)+1):
         )
     )
 
-loop = asyncio.get_event_loop()
-
 async def ticker(vehicle, race):
-    if not vehicle.moving(clock=race.get_time() - race.time_start, distance_circle=race.distance):
-        print('{} прошёл {} м.'.format(vehicle.name, vehicle.distance))
-    else:
+    if vehicle.moving(clock=race.get_timerace(), distance_circle=race.distance):
         print('!!!!!!! {} финишировал !!!!!!!'.format(vehicle.name))
-        self.transport.close()
+        return
 
-    if vehicle.set_puncture(puncture=random.uniform(0, 1)):
-        print('{} проколол колесо'.format(vehicle.name))
+    print('{} прошёл {} м.'.format(vehicle.name, round(vehicle.distance, 3)))
+
+    if vehicle.is_puncture(puncture=random.uniform(0, 1)):
+        print('------{} проколол колесо. Остановился на {} сек------'.format(vehicle.name, round(vehicle.puncture, 3)))
         await asyncio.sleep(vehicle.elimination)
 
-    if race.finish(vehicle_array):
+    print('____')
+    await ticker(vehicle, race)
+
+
+async def main():
+    race = Race(1500)
+    tasks = [asyncio.create_task(ticker(vehicle, race)) for vehicle in vehicle_array if not vehicle.finish] 
+    await asyncio.gather(*tasks)
+    
+    if race.is_finish(vehicle_array):
         print('Гонщики проехали круг\nПустить игроков ещё на один круг?\nДа/Нет')
         def question():
-            answer = input().lower
+            answer = input().lower()
             if answer not in ['да', 'нет']:
                 print('Введите Да/Нет')
                 question()
@@ -65,16 +72,10 @@ async def ticker(vehicle, race):
 
         if question():
             for x in vehicle_array:
-                x.set_finish(False)
+                x.reset_finish()
+            race.next_circle()
 
-            asyncio.run(main())
-
-
-async def main():
-    race = Race(3000)
-    while True:
-        tasks = [asyncio.create_task(ticker(vehicle, race)) for vehicle in vehicle_array if not vehicle.finish] 
-        await asyncio.gather(*tasks)
+            await main()
 
 asyncio.run(main())
 
