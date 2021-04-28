@@ -1,78 +1,124 @@
 import random
 import time
 from threading import Thread
+
+from config import (vehicle_characteristics as v_charact, 
+                    race_characteristics as r_charact)
+
 from classes.vehicle import Truck, Car, Motorcycle
 from classes.race import Race
 
 
 vehicle_array = []
+race = Race(r_charact['distance_circle'])
 
-for x in range(1, random.randint(1, 3)+1):
+name = 'truck'
+range_v = range(v_charact[name]['count']['min'], 
+    random.randint(
+        v_charact[name]['count']['min']+1,
+        v_charact[name]['count']['max']
+    )+1
+)
+
+for x in range_v:
     vehicle_array.append(
         Truck(
-            name='Грузовик №{}'.format(x),
-            speed=random.uniform(0, 120),
-            puncture=random.uniform(0.4, 1),
-            elimination=random.uniform(3, 10),
-            weight=5000
+            name='{} №{}'.format(v_charact[name]['name'], x),
+            speed=random.uniform(v_charact[name]['speed']['min'], v_charact[name]['speed']['max']),
+            puncture=random.uniform(v_charact[name]['puncture']['min'], v_charact[name]['puncture']['max']),
+            elimination=random.uniform(v_charact[name]['elimination']['min'], v_charact[name]['elimination']['max']),
+            weight=random.uniform(v_charact[name]['weight']['min'], v_charact[name]['weight']['max']),
         )
     )
 
-for x in range(1, random.randint(1, 5)+1):
+name = 'motorcycle'
+range_v = range(v_charact[name]['count']['min'], 
+    random.randint(
+        v_charact[name]['count']['min']+1,
+        v_charact[name]['count']['max']
+    )+1
+)
+
+for x in range_v:
     vehicle_array.append(
         Motorcycle(
-            name='Мотоцикл №{}'.format(x),
-            speed=random.uniform(0, 300),
-            puncture=random.uniform(0, 1),
-            elimination=random.uniform(1, 4),
-            stroller=bool(random.randint(0, 1))
+            name='{} №{}'.format(v_charact[name]['name'], x),
+            speed=random.uniform(v_charact[name]['speed']['min'], v_charact[name]['speed']['max']),
+            puncture=random.uniform(v_charact[name]['puncture']['min'], v_charact[name]['puncture']['max']),
+            elimination=random.uniform(v_charact[name]['elimination']['min'], v_charact[name]['elimination']['max']),
+            stroller=random.randint(v_charact[name]['stroller']['min'], v_charact[name]['stroller']['max'])
         )
     )
 
-for x in range(1, random.randint(1, 6)+1):
+name = 'car'
+range_v = range(v_charact[name]['count']['min'], 
+    random.randint(
+        v_charact[name]['count']['min']+1,
+        v_charact[name]['count']['max']
+    )+1
+)
+
+for x in range_v:
     vehicle_array.append(
         Car(
-            name='Легковушка №{}'.format(x),
-            speed=random.uniform(0, 200),
-            puncture=random.uniform(0.2, 1),
-            elimination=random.uniform(1, 7),
-            people=random.randint(1, 5)
+            name='{} №{}'.format(v_charact[name]['name'], x),
+            speed=random.uniform(v_charact[name]['speed']['min'], v_charact[name]['speed']['max']),
+            puncture=random.uniform(v_charact[name]['puncture']['min'], v_charact[name]['puncture']['max']),
+            elimination=random.uniform(v_charact[name]['elimination']['min'], v_charact[name]['elimination']['max']),
+            people=random.randint(v_charact[name]['people']['min'], v_charact[name]['people']['max'])
         )
     )
 
-def ticker(vehicle, race):
-    while not vehicle.moving(clock=race.get_timerace(), distance_circle=race.distance):
-        print('{} прошёл {} м.'.format(vehicle.name, round(vehicle.distance, 3)))
+def ticker(vehicle):
+    while not vehicle.moving(distance_circle=race.distance_circle):
+        print('{} проехал {} м.'.format(
+            vehicle.name, 
+            round(vehicle.distance, 3))
+        )
         if vehicle.is_puncture(puncture=random.uniform(0, 1)):
-            print('------{} проколол колесо. Остановился на {} сек------'.format(vehicle.name, round(vehicle.puncture, 3)))
+            print('------{} проколол колесо. Остановился на {} сек------'.format(
+                vehicle.name, 
+                round(vehicle.puncture, 3))
+            )
             time.sleep(vehicle.elimination)
+    else:
+        race.update_finished(vehicle)
+        print('!!!!!!! {} проехал {} м и финишировал !!!!!!!'.format(
+            vehicle.name, 
+            round(vehicle.distance, 3))
+        )
 
-    print('!!!!!!! {} финишировал !!!!!!!'.format(vehicle.name))
+def observer():
+    while True:
+        if Race.is_finish(vehicle_array):
+            print('% Наблюдатель: Гонщики проехали круг и {} м %\n' \
+                'Пустить игроков ещё на один круг?\nДа/Нет'.format(race.distance)
+            )
+            def question():
+                answer = input().lower()
+                if answer not in ['да', 'нет']:
+                    print('Введите Да/Нет')
+                    question()
+                    return
+                else:
+                    return 'да' in answer
+
+            if question():
+                for x in vehicle_array:
+                    x.reset_finish()
+                race.next_circle()
+                main()
+            else:
+                print('!!!Гонка закончилась!!!\nПорядок финиширования:\n{}'.format(
+                    race.get_result())
+                )
+            return
 
 def main():
-    race = Race(500)
     for vehicle in vehicle_array:
-        th = Thread(target=ticker, args=(vehicle, race))
-        th.start()
-    
-    if race.is_finish(vehicle_array):
-        print('Гонщики проехали круг\nПустить игроков ещё на один круг?\nДа/Нет')
-        def question():
-            answer = input().lower()
-            if answer not in ['да', 'нет']:
-                print('Введите Да/Нет')
-                question()
-                return
-            else:
-                return 'да' in answer
+        Thread(target=ticker, args=(vehicle, )).start()
 
-        if question():
-            for x in vehicle_array:
-                x.reset_finish()
-            race.next_circle()
-            main()
-        else:
-            print('Гонка закончилась')
+    Thread(target=observer).start()
 
 if __name__ == "__main__":
     main()
