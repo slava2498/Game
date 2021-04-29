@@ -12,6 +12,7 @@ from classes.race import Race
 vehicle_array = []
 race = Race(r_charact['distance_circle'])
 
+# генерится количество грузовиков
 name = 'truck'
 range_v = range(v_charact[name]['count']['min'], 
     random.randint(
@@ -31,6 +32,7 @@ for x in range_v:
         )
     )
 
+# генерится количество мотоциклов
 name = 'motorcycle'
 range_v = range(v_charact[name]['count']['min'], 
     random.randint(
@@ -50,6 +52,7 @@ for x in range_v:
         )
     )
 
+# генерится количество машин
 name = 'car'
 range_v = range(v_charact[name]['count']['min'], 
     random.randint(
@@ -70,11 +73,13 @@ for x in range_v:
     )
 
 def ticker(vehicle):
+    # while, пока объект не финишировал
     while not vehicle.moving(distance_circle=race.distance_circle):
         print('{} проехал {} м.'.format(
             vehicle.name, 
             round(vehicle.distance, 3))
         )
+        # прокол колеса
         if vehicle.is_puncture(puncture=random.uniform(0, 1)):
             print('------{} проколол колесо. Остановился на {} сек------'.format(
                 vehicle.name, 
@@ -88,6 +93,7 @@ def ticker(vehicle):
             round(vehicle.distance, 3))
         )
 
+# наблюдатель за гонкой
 def observer():
     while True:
         if Race.is_finish(vehicle_array):
@@ -104,6 +110,7 @@ def observer():
                     return 'да' in answer
 
             if question():
+                # обнуляем у vehicle finish и добавляем новый круг 
                 for x in vehicle_array:
                     x.reset_finish()
                 race.next_circle()

@@ -1,4 +1,3 @@
-
 vehicle_characteristics = {
     'truck': {
         'name': 'Грузовик',

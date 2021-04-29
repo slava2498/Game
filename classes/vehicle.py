@@ -11,7 +11,7 @@ class Vehicle:
 		self.time_start = time.time()
 
 	def moving(self, distance_circle):
-		self.distance = self.speed * (time.time() - self.time_start)
+		self.distance = self.speed * (time.time() - self.time_start) # сколько проехал
 		self.finish = self.distance > distance_circle
 		return self.finish
 
@@ -31,6 +31,7 @@ class Vehicle:
 			'people': 'Кол-во человек',
 			'stroller': 'Коляска',
 		}
+		# вывод характеристик каждого участника
 		print(' '.join(
 			[
 				"{}: {}".format(
